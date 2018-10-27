@@ -9,7 +9,7 @@ class Game:
         actions = []
         directions = ['u', 'd', 'l', 'r']
         if state.numEmpty() <= 1:
-            directions.extend('re')
+            directions.append('re')
         distances = [1, 2, 3, 4]
         for y in range(1, 9):
             for x in range(1, 9):
@@ -17,8 +17,8 @@ class Game:
                     for dis in distances:
                         action = (y, x, direc, dis)
                         try:
-                            Result(state, action)
-                            actions.extend(action)
+                            self.Result(state, action)
+                            actions.append(action)
                         except:
                             continue
         return actions
@@ -33,24 +33,24 @@ class Game:
 
         if result.get(ycor, xcor) != result.turn:
             raise ValueError('The specified piece does not belong to the current player.')
-        if distance <= 0:
+        if distance <= 0 or (direction == 're' and distance > 1):
             raise ValueError('Distance must be positive.')
         if direction == 're':
             if result.turn == 0 and result.numEmpty() == 0:
-                if (ycor, xcor) not in [(1, 1), (4, 4), (5, 5), (8, 8)]:
+                if (ycor, xcor) not in [(0, 0), (3, 3), (4, 4), (7, 7)]:
                     raise ValueError('Player One cannot remove a piece from that location.')
                 else:
                     result.set(ycor, xcor, -1)
             elif result.turn == 1 and result.numEmpty() == 1:
                 emptySpace = None
                 if result.get(0, 0) == -1:
-                    emptySpace = (1, 1)
+                    emptySpace = (0, 0)
                 elif result.get(3, 3) == -1:
-                    emptySpace = (4, 4)
+                    emptySpace = (3, 3)
                 elif result.get(4, 4) == -1:
-                    emptySpace = (5, 5)
+                    emptySpace = (4, 4)
                 else:
-                    emptySpace = (8, 8)
+                    emptySpace = (7, 7)
 
                 if abs(emptySpace[0] + emptySpace[1] - ycor - xcor) != 1:
                     raise ValueError('Player Two must pick a piece adjacent to the empty space.')
@@ -68,21 +68,20 @@ class Game:
                     result.set(ycor+ymult*(2*x+2), xcor+xmult*(2*x+2), result.turn)
                 else:
                     raise ValueError('Invalid move.')
+
+        result.turn = (result.turn+1)%2
         return result
 
     def TerminalTest(self, state):
-        return len(Actions(state)) > 0
+        return len(self.Actions(state)) > 0
 
     def Utility(self, state, player):
-        if TerminalTest(state) and state.turn == player:
+        if self.TerminalTest(state) and state.turn == player:
             return 1
-        elif TerminalTest(state):
+        elif self.TerminalTest(state):
             return 0
         else:
             raise ValueError('Cannot determine utility of a non-terminal state.')
-
-    def __check(state, ycor, xcor, axis, dir):
-
 
 class State:
     def __init__(self, orig=None):
@@ -94,29 +93,37 @@ class State:
             self._data = [[orig.get(y, x) for x in range(8)] for y in range(8)]
             self.turn = orig.turn
 
-    def get(y, x):
+    def __str__(self):
+        string = ''
+        for y in range(0, 8):
+            for x in range(0, 8):
+                string = string + str(self._data[y][x]) + ' '
+            string = string + '\n'
+        return string
+
+    def get(self, y, x):
         if y >= 0 and y <= 7 and x >= 0 and x <= 7:
-            return this._data[y][x]
+            return self._data[y][x]
         else:
             return None
 
-    def set(y, x, value):
+    def set(self, y, x, value):
         if y >= 0 and y <= 7 and x >= 0 and x <= 7:
-            this._data[y][x] = value
+            self._data[y][x] = value
 
     def numEmpty(self):
-        return __count(-1)
+        return self.__count(-1)
 
     def numBlack(self):
-        return __count(0)
+        return self.__count(0)
 
     def numWhite(self):
-        return __count(1)
+        return self.__count(1)
 
     def __count(self, value):
         count = 0
         for x in range(8):
             for y in range(8):
-                if self._data[y][x] === value:
-                    count++
+                if self._data[y][x] == value:
+                    count+=1
         return count
