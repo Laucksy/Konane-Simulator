@@ -97,7 +97,12 @@ class State:
         string = ''
         for y in range(0, 8):
             for x in range(0, 8):
-                string = string + str(self._data[y][x]) + ' '
+                char = ' '
+                if self._data[y][x] == 0:
+                    char = 'B'
+                elif self._data[y][x] == 1:
+                    char = 'W'
+                string = string + str(char) + ' '
             string = string + '\n'
         return string
 
