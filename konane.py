@@ -1,6 +1,7 @@
 class Game:
     def __init__(self):
         self.initialState = State()
+     
 
     def Player(self, state):
         return state.turn
@@ -22,6 +23,8 @@ class Game:
                         except:
                             continue
         return actions
+
+
 
     def Result(self, state, action):
         ycor = action[0] - 1
@@ -83,6 +86,57 @@ class Game:
         else:
             raise ValueError('Cannot determine utility of a non-terminal state.')
 
+    def PlayerType(self, state):
+        if state.getType() == 0:
+            return 0 
+        else:
+            return 1
+        return 0
+
+    def Evaluation(self, state):
+        return self.Actions(state)[0]
+
+    def Minimax(self, state, depthLimit):
+
+        #sorta lost on how to get the depth
+        maxNode = True
+        if self.PlayerType(state) == 1:
+            maxNode = False 
+        infinity = 0
+        v = self.max_value(state, -infinity, infinity, 0, depthLimit)
+        return v;
+            
+
+          
+    def max_value(self, state, alpha, beta, depth, depthLimit):
+        if (depth >= depthLimit) or (self.TerminalTest(state)):
+            return self.Evaluation(state)
+
+        v = -infinity
+        for a in self.Actions(state):
+            v = max(v, min_value(self.Result(state, a), alpha, beta, depth+1))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
+
+
+    def min_value(self, state, alpha, beta, depth, depthLimit):
+        if (depth >= depthLimit) or (self.TerminalTest(state)):
+            return self.Evaluation(state)
+
+        v = infinity
+        for a in self.Actions(state):
+            v = min(v, max_value(self.Result(state, a), alpha, beta, depth+1))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
+        return v
+
+
+
+
+
 class State:
     def __init__(self, orig=None):
         if orig is None:
@@ -105,6 +159,18 @@ class State:
                 string = string + str(char) + ' '
             string = string + '\n'
         return string
+
+    def getType(self):
+      
+        for y in range(0, 8):
+            for x in range(0, 8):
+           
+                if self._data[y][x] == 0:
+                    return 0
+                elif self._data[y][x] == 1:
+                    return 1         
+        return 0
+
 
     def get(self, y, x):
         if y >= 0 and y <= 7 and x >= 0 and x <= 7:
@@ -132,3 +198,15 @@ class State:
                 if self._data[y][x] == value:
                     count+=1
         return count
+
+    
+
+    
+
+
+
+
+
+
+    
+    
