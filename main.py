@@ -45,8 +45,8 @@ initial = game.initialState
 action = game.Minimax(initial, 3)
 result = game.Result(initial, action)
 print(str(result))
-print(game.Minimax(result, 3))
-# print(game.TerminalTest(result))
+print(game.Minimax(result, 3)) 
+print(game.TerminalTest(result))
 
 # action = game.Actions(result)[0]
 # result = game.Result(result, action)

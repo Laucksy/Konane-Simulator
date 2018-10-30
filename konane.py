@@ -1,6 +1,7 @@
 class Game:
     def __init__(self):
         self.initialState = State()
+        self.numEvals = 0
      
 
     def Player(self, state):
@@ -80,58 +81,61 @@ class Game:
 
     def Utility(self, state, player):
         if self.TerminalTest(state) and state.turn == player:
-            return 1
+            return (1, None)
         elif self.TerminalTest(state):
-            return 0
+            return (0, None)
         else:
             raise ValueError('Cannot determine utility of a non-terminal state.')
 
-    def PlayerType(self, state):
-        if state.getType() == 0:
-            return 0 
-        else:
-            return 1
-        return 0
-
     def Evaluation(self, state):
-        return self.Actions(state)[0]
+        self.numEvals += 1
+        return (0, self.Actions(state)[0])
 
     def Minimax(self, state, depthLimit):
 
-        #sorta lost on how to get the depth
-        maxNode = True
-        if self.PlayerType(state) == 1:
-            maxNode = False 
-        infinity = 0
-        v = self.max_value(state, -infinity, infinity, 0, depthLimit)
-        return v;
+        infinity = float('inf')
+        result = self.max_value(state, -infinity, infinity, 0, depthLimit)
+        print result
+        return result[1];
             
 
           
     def max_value(self, state, alpha, beta, depth, depthLimit):
-        if (depth >= depthLimit) or (self.TerminalTest(state)):
+        if (depth >= depthLimit):
             return self.Evaluation(state)
+        elif (self.TerminalTest(state)):
+            return self.Utility(state, state.turn)
 
-        v = -infinity
+        v = -float('inf')
+        s = None
         for a in self.Actions(state):
-            v = max(v, min_value(self.Result(state, a), alpha, beta, depth+1))
+            result = min_value(self.Result(state, a), alpha, beta, depth+1)
+            if (result[0] > v):
+                v = result[0]
+                s = result[1]
             if v >= beta:
-                return v
+                return (v, s)
             alpha = max(alpha, v)
-        return v
+        return (v, s)
 
 
-    def min_value(self, state, alpha, beta, depth, depthLimit):
-        if (depth >= depthLimit) or (self.TerminalTest(state)):
+    def min_value(self, state,alpha, beta, depth, depthLimit):
+        if (depth >= depthLimit):
             return self.Evaluation(state)
+        elif (self.TerminalTest(state)):
+            return self.Utility(state, state.turn)
 
-        v = infinity
+        v = float('inf')
+        s = None
         for a in self.Actions(state):
-            v = min(v, max_value(self.Result(state, a), alpha, beta, depth+1))
+            result = max_value(self.Result(state, a), alpha, beta, depth+1)
+            if result[0] < v:
+                v = result[0]
+                s = result[1]
             if v <= alpha:
-                return v
+                return (v, s)
             beta = min(beta, v)
-        return v
+        return (v, s)
 
 
 
@@ -159,17 +163,6 @@ class State:
                 string = string + str(char) + ' '
             string = string + '\n'
         return string
-
-    def getType(self):
-      
-        for y in range(0, 8):
-            for x in range(0, 8):
-           
-                if self._data[y][x] == 0:
-                    return 0
-                elif self._data[y][x] == 1:
-                    return 1         
-        return 0
 
 
     def get(self, y, x):
