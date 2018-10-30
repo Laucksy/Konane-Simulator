@@ -2,7 +2,9 @@ class Game:
     def __init__(self):
         self.initialState = State()
         self.numEvals = 0
-     
+        self.numBranches = 0
+        self.numLevels = 0
+
 
     def Player(self, state):
         return state.turn
@@ -15,6 +17,8 @@ class Game:
         distances = [1, 2, 3, 4]
         for y in range(1, 9):
             for x in range(1, 9):
+                if state.get(y-1, x-1) != state.turn:
+                    continue
                 for direc in directions:
                     for dis in distances:
                         action = (y, x, direc, dis)
@@ -77,61 +81,67 @@ class Game:
         return result
 
     def TerminalTest(self, state):
-        return len(self.Actions(state)) > 0
+        return len(self.Actions(state)) == 0
 
     def Utility(self, state, player):
         if self.TerminalTest(state) and state.turn == player:
-            return (1, None)
-        elif self.TerminalTest(state):
             return (0, None)
+        elif self.TerminalTest(state):
+            return (1, None)
         else:
             raise ValueError('Cannot determine utility of a non-terminal state.')
 
     def Evaluation(self, state):
         self.numEvals += 1
+        # print("Evaluation")
+        # print(state)
+        # print(state.turn)
+        # print("a")
+        # print(self.Actions(state))
         return (0, self.Actions(state)[0])
 
     def Minimax(self, state, depthLimit):
-
         infinity = float('inf')
         result = self.max_value(state, -infinity, infinity, 0, depthLimit)
-        print result
+        # print result
         return result[1];
-            
 
-          
     def max_value(self, state, alpha, beta, depth, depthLimit):
-        if (depth >= depthLimit):
-            return self.Evaluation(state)
-        elif (self.TerminalTest(state)):
+        if (self.TerminalTest(state)):
             return self.Utility(state, state.turn)
+        elif (depth >= depthLimit):
+            return self.Evaluation(state)
 
         v = -float('inf')
         s = None
+        self.numBranches += len(self.Actions(state))
+        self.numLevels += 1
         for a in self.Actions(state):
-            result = min_value(self.Result(state, a), alpha, beta, depth+1)
+            result = self.min_value(self.Result(state, a), alpha, beta, depth+1, depthLimit)
             if (result[0] > v):
                 v = result[0]
-                s = result[1]
+                s = a
             if v >= beta:
                 return (v, s)
             alpha = max(alpha, v)
         return (v, s)
 
 
-    def min_value(self, state,alpha, beta, depth, depthLimit):
-        if (depth >= depthLimit):
-            return self.Evaluation(state)
-        elif (self.TerminalTest(state)):
+    def min_value(self, state, alpha, beta, depth, depthLimit):
+        if (self.TerminalTest(state)):
             return self.Utility(state, state.turn)
+        elif (depth >= depthLimit):
+            return self.Evaluation(state)
 
         v = float('inf')
         s = None
+        self.numBranches += len(self.Actions(state))
+        self.numLevels += 1
         for a in self.Actions(state):
-            result = max_value(self.Result(state, a), alpha, beta, depth+1)
+            result = self.max_value(self.Result(state, a), alpha, beta, depth+1, depthLimit)
             if result[0] < v:
                 v = result[0]
-                s = result[1]
+                s = a
             if v <= alpha:
                 return (v, s)
             beta = min(beta, v)
@@ -139,12 +149,12 @@ class Game:
 
 
 
-
-
 class State:
     def __init__(self, orig=None):
         if orig is None:
             self._data = [[(y%2 + x%2)%2 for x in range(8)] for y in range(8)]
+            # self._data = [[0,-1,-1,-1,-1,-1,0,-1],[-1,-1,1,-1,-1,0,-1,-1],[0,-1,-1,-1,-1,-1,0,-1],[-1,-1,-1,-1,-1,-1,-1,-1],[-1,1,-1,-1,-1,1,-1,1],[1,0,1,0,1,0,1,0],[0,1,0,1,0,1,0,1],[1,0,1,0,1,0,1,0]]
+            # print(self)
             self.turn = 0
         else:
             """TODO: Test to make sure this works"""
@@ -191,15 +201,3 @@ class State:
                 if self._data[y][x] == value:
                     count+=1
         return count
-
-    
-
-    
-
-
-
-
-
-
-    
-    
