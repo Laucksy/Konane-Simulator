@@ -14,7 +14,7 @@ def gameRunner():
     while(not game.TerminalTest(currentState)):
         sys.stdout.write("\rActions taken %i" % count)
         sys.stdout.flush()
-        action = game.Minimax(currentState, 2)
+        action = game.ab_Minimax(currentState, 2)
         # print(action)
         currentState = game.Result(currentState, action)
         # print(currentState)
@@ -24,6 +24,7 @@ def gameRunner():
     print('White: ', game.Utility(currentState, 1)[0])
     print('Evals: ', game.numEvals)
     print('Branching: ', game.numBranches / game.numLevels)
+    print('Number of Times Pruned', game.numPruned)
 
 inputOne = mapArgToFunction('trivial')
 inputTwo = mapArgToFunction('trivial')
