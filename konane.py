@@ -1,5 +1,7 @@
 class Game:
-    def __init__(self):
+    def __init__(self, evalOne, evalTwo):
+        self.evalOne = evalOne
+        self.evalTwo = evalTwo
         self.initialState = State()
         self.numEvals = 0
         self.numBranches = 0
@@ -29,8 +31,6 @@ class Game:
                         except:
                             continue
         return actions
-
-
 
     def Result(self, state, action):
         ycor = action[0] - 1
@@ -94,20 +94,15 @@ class Game:
 
     def Evaluation(self, state):
         self.numEvals += 1
-        # print("Evaluation")
-        # print(state)
-        # print(state.turn)
-        # print("a")
-        # print(self.Actions(state))
-        return (0, self.Actions(state)[0])
+        return self.evalOne(self, state) if state.turn == 0 else self.evalTwo(self, state)
 
-    def ab_Minimax(self, state, depthLimit):
+    def Minimax(self, state, depthLimit, pruning = False):
         infinity = float('inf')
-        result = self.ab_max_value(state, -infinity, infinity, 0, depthLimit)
+        result = self.max_value(state, -infinity if pruning else None, infinity if pruning else None, 0, depthLimit)
         # print result
         return result[1];
 
-    def ab_max_value(self, state, alpha, beta, depth, depthLimit):
+    def max_value(self, state, alpha, beta, depth, depthLimit):
         if (self.TerminalTest(state)):
             return self.Utility(state, state.turn)
         elif (depth >= depthLimit):
@@ -118,18 +113,19 @@ class Game:
         self.numBranches += len(self.Actions(state))
         self.numLevels += 1
         for a in self.Actions(state):
-            result = self.ab_min_value(self.Result(state, a), alpha, beta, depth+1, depthLimit)
+            result = self.min_value(self.Result(state, a), alpha, beta, depth+1, depthLimit)
             if (result[0] > v):
                 v = result[0]
                 s = a
-            if v >= beta:
-                self.numPruned += 1
-                return (v, s)
-            alpha = max(alpha, v)
+            if alpha is not None and beta is not None:
+                if v >= beta:
+                    self.numPruned += 1
+                    return (v, s)
+                alpha = max(alpha, v)
         return (v, s)
 
 
-    def ab_min_value(self, state, alpha, beta, depth, depthLimit):
+    def min_value(self, state, alpha, beta, depth, depthLimit):
         if (self.TerminalTest(state)):
             return self.Utility(state, state.turn)
         elif (depth >= depthLimit):
@@ -140,50 +136,15 @@ class Game:
         self.numBranches += len(self.Actions(state))
         self.numLevels += 1
         for a in self.Actions(state):
-            result = self.ab_max_value(self.Result(state, a), alpha, beta, depth+1, depthLimit)
+            result = self.max_value(self.Result(state, a), alpha, beta, depth+1, depthLimit)
             if result[0] < v:
                 v = result[0]
                 s = a
-            if v <= alpha:
-                self.numPruned += 1
-                return (v, s)
-            beta = min(beta, v)
-        return (v, s)
-
-    def Minimax(self, state, depthLimit):
-        a = self.Evaluation(state)
-        result = self.min_value(self.Result(state, a[1]), depthLimit)        
-        return result[1];
-
-    def max_value(self, state, depth, depthLimit):
-        if (self.TerminalTest(state)):
-            return self.Utility(state, state.turn)
-        elif (depth >= depthLimit):
-            return self.Evaluation(state)
-
-        v = -float('inf')
-        s = None
-        self.numBranches += len(self.Actions(state))
-        self.numLevels += 1
-        for a in self.Actions(state):
-            v = max(v, depth+1, self.min_value(self.Result(state, a)))
-            s = a
-        return (v, s)
-
-    def min_value(self, state, depth, depthLimit):
-        if (self.TerminalTest(state)):
-            return self.Utility(state, state.turn)
-        elif (depth >= depthLimit):
-            return self.Evaluation(state)
-
-        v = float('inf')
-        s = None
-        self.numBranches += len(self.Actions(state))
-        self.numLevels += 1
-        for a in self.Actions(state):
-            v = min(v, depth+1, self.max_value(self.Result(state, a)))
-            s = a
-
+            if alpha is not None and beta is not None:
+                if v <= alpha:
+                    self.numPruned += 1
+                    return (v, s)
+                beta = min(beta, v)
         return (v, s)
 
 
