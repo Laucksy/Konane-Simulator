@@ -61,7 +61,7 @@ class Game:
                 else:
                     emptySpace = (7, 7)
 
-                if abs(emptySpace[0] + emptySpace[1] - ycor - xcor) != 1:
+                if abs(emptySpace[0] - ycor) + abs(emptySpace[1] - xcor) > 1:
                     raise ValueError('Player Two must pick a piece adjacent to the empty space.')
                 else:
                     result.set(ycor, xcor, -1)
@@ -99,7 +99,6 @@ class Game:
     def Minimax(self, state, depthLimit, pruning = False):
         infinity = float('inf')
         result = self.max_value(state, -infinity if pruning else None, infinity if pruning else None, 0, depthLimit)
-        # print result
         return result[1];
 
     def max_value(self, state, alpha, beta, depth, depthLimit):

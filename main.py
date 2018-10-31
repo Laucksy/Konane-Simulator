@@ -1,15 +1,19 @@
 import sys
 import time
 from konane import Game
+from evals import nextMovesEval
 from evals import trivialEval
 
 def mapArgToFunction(type):
     if type == 'manual':
         return type
+    elif type == 'nextMoves':
+        return nextMovesEval
     else:
         return trivialEval
 
 def gameRunner(evalOne, evalTwo, depthLimit, pruning, printing):
+    print(pruning)
     game = Game(evalOne if evalOne != 'manual' else evalTwo, evalTwo if evalTwo != 'manual' else evalOne)
     currentState = game.initialState
     count = 0
@@ -21,7 +25,7 @@ def gameRunner(evalOne, evalTwo, depthLimit, pruning, printing):
             distance = int(raw_input("Enter the number of jumps for the piece you want to move: "))
             action = (y, x, direction, distance)
         else:
-            action = game.Minimax(currentState, 2, pruning)
+            action = game.Minimax(currentState, depthLimit, pruning)
 
         try:
             currentState = game.Result(currentState, action)
